@@ -61,7 +61,7 @@ if (hasToken(eventId, userId)) {
 }
 
 // 내 순번 조회
-Long rank = redis.zrank("queue:" + eventId, visitorId); // 0-based
+Long rank = redis.zrank("queue:" + eventId, userId); // 0-based
 
 // 남은 자리 계산
 int tokenCount = redis.get("token:count:" + eventId);
