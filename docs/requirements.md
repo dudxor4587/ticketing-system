@@ -60,28 +60,6 @@ X-User-Id: user123
 
 ---
 
-## 테스트 데이터
-
-이벤트, 좌석은 테스트용으로 미리 생성:
-
-```sql
--- 이벤트
-INSERT INTO event (id, name, ticket_open_time, max_concurrent)
-VALUES (1, '테스트 콘서트', '2024-01-01 12:00:00', 800);
-
--- 좌석 (100석)
-INSERT INTO seat (id, event_id, section, row, number, status)
-SELECT
-    generate_series(1, 100),
-    1,
-    'A',
-    (generate_series(1, 100) - 1) / 10 + 1,
-    (generate_series(1, 100) - 1) % 10 + 1,
-    'AVAILABLE';
-```
-
----
-
 ## 비기능적 요구사항
 
 ### 성능
