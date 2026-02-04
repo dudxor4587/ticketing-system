@@ -4,6 +4,72 @@
 
 ---
 
+## 전체 흐름
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    participant R as Redis
+    participant D as DB
+
+    %% 1. 대기열 진입
+    C->>S: 대기열 진입 요청
+    S->>R: ZADD queue
+    R-->>S: 완료
+    S->>R: ZRANK
+    R-->>S: 순번
+    S-->>C: 대기 순번
+
+    %% 2. 상태 조회 (Polling)
+    loop
+        C->>S: 상태 조회 (Polling)
+        S->>R: EXISTS token
+        R-->>S: 존재 여부
+        alt 토큰 있음
+            S-->>C: entered
+        else 토큰 없음
+            S->>R: ZRANK
+            R-->>S: 순위
+            S->>R: GET token:count
+            R-->>S: 입장 인원
+            Note over S: 순위 < (최대 입장 - 입장 인원) → ready
+            S-->>C: waiting/ready, 순위
+        end
+    end
+
+    %% 3. 토큰 획득
+    C->>S: 토큰 요청
+    S->>R: Lua Script 실행
+    R-->>S: 발급 결과
+    S-->>C: 입장 완료
+
+    %% 4. 좌석 조회
+    C->>S: 좌석 조회
+    S->>D: SELECT seats
+    D-->>S: 좌석 목록
+    S-->>C: 좌석 목록
+
+    %% 5. 예매
+    C->>S: 예매 요청
+    S->>R: 락 요청
+    Note over S,R: 락 대기
+    R-->>S: 락 획득
+    S->>D: 예매 처리
+    D-->>S: 완료
+    S->>R: 잔여 좌석 감소
+    R-->>S: 완료
+    S->>R: 락 해제 요청
+    R-->>S: 락 해제
+    S->>R: 토큰 삭제
+    R-->>S: 완료
+    S->>R: 토큰 카운트 감소
+    R-->>S: 완료
+    S-->>C: 예매 완료
+```
+
+---
+
 ## Redis 키 구조
 
 ```
