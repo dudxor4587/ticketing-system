@@ -140,6 +140,71 @@ try {
 
 ---
 
+## 4. 분산 환경의 근본적 한계
+
+### CAP 정리
+
+분산 시스템에서 **Consistency(일관성), Availability(가용성), Partition Tolerance(분할 내성)** 중 2개만 선택 가능.
+
+| 조합 | 포기하는 것 | 특징 | 예시 |
+|------|------------|------|------|
+| **CA** | 분할 내성 | 네트워크 분할 없는 환경 (현실적으로 불가능) | 단일 노드 DB |
+| **CP** | 가용성 | 일관성 우선, 장애 시 서비스 중단 | ZooKeeper, etcd |
+| **AP** | 일관성 | 가용성 우선, 일시적 데이터 불일치 허용 | Redis, Cassandra |
+
+Redis는 **AP**를 선택 → 가용성을 위해 일관성 일부 포기.
+
+### Redis Cluster/Sentinel을 써도 발생 가능한 문제
+
+| 상황 | 결과 |
+|------|------|
+| 전체 데이터센터 장애 | Redis 전체 다운 |
+| 네트워크 파티션 | Split brain (두 Master 발생 가능) |
+| Failover 진행 중 | 수 초간 락/대기열 불가 |
+| 비동기 복제 지연 | Master 장애 시 최근 데이터 유실 |
+
+### 분산 락의 한계
+
+Redisson 락은 **단일 Redis**에서는 안전하지만, 클러스터 환경에서 100% 보장 불가.
+
+```
+1. Client A가 Master에서 락 획득
+2. Master → Replica 복제 전에 Master 장애
+3. Replica가 새 Master로 승격 (락 정보 없음)
+4. Client B가 같은 락 획득
+→ 두 클라이언트가 동시에 락 보유 (Safety 위반)
+```
+
+### 현재 시스템의 이중 방어
+
+현재 시스템은 **Redisson 락 + DB 락**을 함께 사용해 이중 방어.
+
+```java
+// 1차 방어: Redisson 분산 락
+lock.tryLock(3, 5, TimeUnit.SECONDS);
+
+// 2차 방어: DB 락 (SELECT FOR UPDATE)
+seatRepository.findByIdForUpdate(seatId);
+```
+
+Redisson 락이 클러스터 환경에서 뚫려도, **DB의 비관적 락에서 한 번 더 잡아줌**.
+
+| 상황 | Redisson 락 | DB 락 | 결과 |
+|------|------------|-------|------|
+| 정상 | ✅ | ✅ | 정상 처리 |
+| Redis 락 유실 | ❌ | ✅ | DB 락에서 방어 |
+| DB 장애 | ✅ | ❌ | 트랜잭션 롤백 |
+
+### 현실적인 대응
+
+100% 가용성은 **불가능**. 운영 환경에서는:
+
+- 모니터링 + 알림으로 빠른 감지
+- 자동 Failover로 빠른 복구
+- 서킷 브레이커로 장애 전파 방지
+
+---
+
 ## 정리
 
 | 한계점 | 현재 괜찮은 이유 | 개선 방안 |
@@ -147,3 +212,4 @@ try {
 | Redis-DB 불일치 | TTL 자동 복구, DB가 기준 | 이벤트 기반 재시도, 주기적 동기화 |
 | 락 시간 초과 | 처리 시간 1초 이내 | Watchdog, leaseTime 조정 |
 | Redis SPOF | 개발 환경, Redis 안정성 | Cluster / Sentinel, Fallback |
+| 분산 환경 한계 | DB 락으로 이중 방어 | 모니터링, 서킷 브레이커 |
