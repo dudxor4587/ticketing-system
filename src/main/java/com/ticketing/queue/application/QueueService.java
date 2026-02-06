@@ -2,8 +2,10 @@ package com.ticketing.queue.application;
 
 import com.ticketing.config.TicketingProperties;
 import com.ticketing.queue.application.dto.QueueEnterResponse;
+import com.ticketing.queue.application.dto.QueueEnteredResponse;
+import com.ticketing.queue.application.dto.QueueResponse;
 import com.ticketing.queue.application.dto.QueueStatus;
-import com.ticketing.queue.application.dto.QueueStatusResponse;
+import com.ticketing.queue.application.dto.QueueWaitingResponse;
 import com.ticketing.queue.application.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -36,19 +38,19 @@ public class QueueService {
         return new QueueEnterResponse(eventId, userId, rank);
     }
 
-    public QueueStatusResponse getStatus(UUID eventId, UUID userId) {
+    public QueueResponse getStatus(UUID eventId, UUID userId) {
         String tokenKey = String.format(TOKEN_KEY, eventId, userId);
         String queueKey = String.format(QUEUE_KEY, eventId);
         String countKey = String.format(TOKEN_COUNT_KEY, eventId);
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(tokenKey))) {
             redisTemplate.expire(tokenKey, properties.getTokenTtl(), TimeUnit.SECONDS);
-            return new QueueStatusResponse(QueueStatus.ENTERED, null, null);
+            return new QueueEnteredResponse(QueueStatus.ENTERED);
         }
 
         Long rank = redisTemplate.opsForZSet().rank(queueKey, userId.toString());
         if (rank == null) {
-            return new QueueStatusResponse(QueueStatus.WAITING, null, null);
+            throw new IllegalStateException("대기열에 등록되지 않았습니다.");
         }
 
         String countStr = redisTemplate.opsForValue().get(countKey);
@@ -57,7 +59,7 @@ public class QueueService {
 
         QueueStatus status = rank < remaining ? QueueStatus.READY : QueueStatus.WAITING;
 
-        return new QueueStatusResponse(status, rank, rank);
+        return new QueueWaitingResponse(status, rank, rank);
     }
 
     public TokenResponse acquireToken(UUID eventId, UUID userId) {

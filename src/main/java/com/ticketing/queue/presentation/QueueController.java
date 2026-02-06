@@ -2,7 +2,7 @@ package com.ticketing.queue.presentation;
 
 import com.ticketing.queue.application.QueueService;
 import com.ticketing.queue.application.dto.QueueEnterResponse;
-import com.ticketing.queue.application.dto.QueueStatusResponse;
+import com.ticketing.queue.application.dto.QueueResponse;
 import com.ticketing.queue.application.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +27,11 @@ public class QueueController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<QueueStatusResponse> getStatus(
+    public ResponseEntity<QueueResponse> getStatus(
             @RequestParam UUID eventId,
             @RequestHeader("X-User-Id") UUID userId
     ) {
-        QueueStatusResponse response = queueService.getStatus(eventId, userId);
+        QueueResponse response = queueService.getStatus(eventId, userId);
         return ResponseEntity.ok(response);
     }
 
