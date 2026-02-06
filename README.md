@@ -55,3 +55,4 @@ sequenceDiagram
 | [아키텍처](docs/architecture.md) | 설계 및 기술 선택 근거 |
 | [구현 상세](docs/implementation.md) | 상세 흐름, Redis 키 구조 |
 | [요구사항](docs/requirements.md) | API 목록, 기능 정의 |
+| [한계점 및 개선](docs/limitations.md) | 시스템 한계점, 개선 방안 |
