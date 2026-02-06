@@ -13,4 +13,5 @@ public class TicketingProperties {
 
     private int maxConcurrent;
     private int tokenTtl;
+    private int activityTtl;
 }

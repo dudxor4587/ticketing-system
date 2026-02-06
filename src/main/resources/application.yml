@@ -27,3 +27,4 @@ ticketing:
   queue:
     max-concurrent: 800  # 최대 동시 입장 인원
     token-ttl: 300       # 토큰 TTL (초)
+    activity-ttl: 60     # 대기열 활동 TTL (초) - polling 안하면 만료

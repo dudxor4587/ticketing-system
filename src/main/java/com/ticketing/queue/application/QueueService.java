@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -26,13 +27,16 @@ public class QueueService {
     private static final String QUEUE_KEY = "queue:%s";
     private static final String TOKEN_KEY = "token:%s:%s";
     private static final String TOKEN_COUNT_KEY = "token:count:%s";
+    private static final String ACTIVITY_KEY = "queue:activity:%s:%s";
 
     public QueueEnterResponse enter(UUID eventId, UUID userId) {
         String queueKey = String.format(QUEUE_KEY, eventId);
+        String activityKey = String.format(ACTIVITY_KEY, eventId, userId);
         String userIdStr = userId.toString();
         double score = System.currentTimeMillis();
 
         redisTemplate.opsForZSet().add(queueKey, userIdStr, score);
+        redisTemplate.opsForValue().set(activityKey, "1", properties.getActivityTtl(), TimeUnit.SECONDS);
         Long rank = redisTemplate.opsForZSet().rank(queueKey, userIdStr);
 
         return new QueueEnterResponse(eventId, userId, rank);
@@ -42,6 +46,7 @@ public class QueueService {
         String tokenKey = String.format(TOKEN_KEY, eventId, userId);
         String queueKey = String.format(QUEUE_KEY, eventId);
         String countKey = String.format(TOKEN_COUNT_KEY, eventId);
+        String activityKey = String.format(ACTIVITY_KEY, eventId, userId);
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(tokenKey))) {
             redisTemplate.expire(tokenKey, properties.getTokenTtl(), TimeUnit.SECONDS);
@@ -52,6 +57,9 @@ public class QueueService {
         if (rank == null) {
             throw new IllegalStateException("대기열에 등록되지 않았습니다.");
         }
+
+        // 활동 TTL 갱신 - polling 시마다 갱신되어 활성 상태 유지
+        redisTemplate.opsForValue().set(activityKey, "1", properties.getActivityTtl(), TimeUnit.SECONDS);
 
         String countStr = redisTemplate.opsForValue().get(countKey);
         int tokenCount = countStr != null ? Integer.parseInt(countStr) : 0;
@@ -129,5 +137,32 @@ public class QueueService {
             redisTemplate.delete(tokenKey);
             redisTemplate.opsForValue().decrement(countKey);
         }
+    }
+
+    public void removeInactiveUsers(UUID eventId) {
+        String queueKey = String.format(QUEUE_KEY, eventId);
+
+        Set<String> members = redisTemplate.opsForZSet().range(queueKey, 0, -1);
+        if (members == null || members.isEmpty()) {
+            return;
+        }
+
+        for (String userId : members) {
+            String activityKey = String.format(ACTIVITY_KEY, eventId, userId);
+            if (Boolean.FALSE.equals(redisTemplate.hasKey(activityKey))) {
+                redisTemplate.opsForZSet().remove(queueKey, userId);
+            }
+        }
+    }
+
+    public Set<String> getActiveQueueKeys() {
+        Set<String> keys = redisTemplate.keys("queue:*");
+        if (keys == null) {
+            return Set.of();
+        }
+        // queue:{eventId} 형식만 필터링 (queue:activity:*, queue:ttl:* 제외)
+        return keys.stream()
+                .filter(key -> key.matches("queue:[0-9a-f\\-]+"))
+                .collect(java.util.stream.Collectors.toSet());
     }
 }
