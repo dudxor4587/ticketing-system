@@ -1,4 +1,4 @@
-package com.ticketing.domain;
+package com.ticketing.seat.domain;
 
 public enum SeatStatus {
     AVAILABLE,

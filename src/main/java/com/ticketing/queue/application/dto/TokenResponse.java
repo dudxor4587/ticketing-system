@@ -1,4 +1,4 @@
-package com.ticketing.dto;
+package com.ticketing.queue.application.dto;
 
 public record TokenResponse(
         boolean success,

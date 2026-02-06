@@ -1,9 +1,9 @@
-package com.ticketing.controller;
+package com.ticketing.queue.presentation;
 
-import com.ticketing.dto.QueueEnterResponse;
-import com.ticketing.dto.QueueStatusResponse;
-import com.ticketing.dto.TokenResponse;
-import com.ticketing.service.QueueService;
+import com.ticketing.queue.application.QueueService;
+import com.ticketing.queue.application.dto.QueueEnterResponse;
+import com.ticketing.queue.application.dto.QueueStatusResponse;
+import com.ticketing.queue.application.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

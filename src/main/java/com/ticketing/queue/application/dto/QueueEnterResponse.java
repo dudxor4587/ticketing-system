@@ -1,4 +1,4 @@
-package com.ticketing.dto;
+package com.ticketing.queue.application.dto;
 
 import java.util.UUID;
 

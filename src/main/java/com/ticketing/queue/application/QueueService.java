@@ -1,10 +1,10 @@
-package com.ticketing.service;
+package com.ticketing.queue.application;
 
 import com.ticketing.config.TicketingProperties;
-import com.ticketing.dto.QueueEnterResponse;
-import com.ticketing.dto.QueueStatus;
-import com.ticketing.dto.QueueStatusResponse;
-import com.ticketing.dto.TokenResponse;
+import com.ticketing.queue.application.dto.QueueEnterResponse;
+import com.ticketing.queue.application.dto.QueueStatus;
+import com.ticketing.queue.application.dto.QueueStatusResponse;
+import com.ticketing.queue.application.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -30,10 +30,7 @@ public class QueueService {
         String userIdStr = userId.toString();
         double score = System.currentTimeMillis();
 
-        // ZADD queue:{eventId} {timestamp} {userId}
         redisTemplate.opsForZSet().add(queueKey, userIdStr, score);
-
-        // ZRANK로 순번 조회
         Long rank = redisTemplate.opsForZSet().rank(queueKey, userIdStr);
 
         return new QueueEnterResponse(eventId, userId, rank);
@@ -44,27 +41,20 @@ public class QueueService {
         String queueKey = String.format(QUEUE_KEY, eventId);
         String countKey = String.format(TOKEN_COUNT_KEY, eventId);
 
-        // 이미 토큰 있는지 확인
         if (Boolean.TRUE.equals(redisTemplate.hasKey(tokenKey))) {
-            // 토큰 TTL 갱신
             redisTemplate.expire(tokenKey, properties.getTokenTtl(), TimeUnit.SECONDS);
             return new QueueStatusResponse(QueueStatus.ENTERED, null, null);
         }
 
-        // 순위 조회
         Long rank = redisTemplate.opsForZSet().rank(queueKey, userId.toString());
         if (rank == null) {
             return new QueueStatusResponse(QueueStatus.WAITING, null, null);
         }
 
-        // 현재 입장 인원 조회
         String countStr = redisTemplate.opsForValue().get(countKey);
         int tokenCount = countStr != null ? Integer.parseInt(countStr) : 0;
-
-        // 남은 자리 계산
         int remaining = properties.getMaxConcurrent() - tokenCount;
 
-        // 상태 결정
         QueueStatus status = rank < remaining ? QueueStatus.READY : QueueStatus.WAITING;
 
         return new QueueStatusResponse(status, rank, rank);
@@ -83,22 +73,18 @@ public class QueueService {
                 local maxConcurrent = tonumber(ARGV[2])
                 local ttl = tonumber(ARGV[3])
 
-                -- 이미 토큰 있으면 성공
                 if redis.call('EXISTS', tokenKey) == 1 then
                     return 1
                 end
 
-                -- 내 순번 확인
                 local rank = redis.call('ZRANK', queueKey, userId)
                 if rank == false then
                     return -1
                 end
 
-                -- 남은 자리 계산
                 local current = tonumber(redis.call('GET', countKey) or 0)
                 local remaining = maxConcurrent - current
 
-                -- 내 순번 < 남은 자리 → 토큰 발급
                 if rank < remaining then
                     redis.call('SET', tokenKey, 1, 'EX', ttl)
                     redis.call('INCR', countKey)

@@ -1,4 +1,4 @@
-package com.ticketing.domain;
+package com.ticketing.reservation.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
