@@ -1,13 +1,12 @@
-package com.ticketingsystem.ticketingsystem;
+package com.ticketing;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TicketingSystemApplicationTests {
+class TicketingApplicationTests {
 
     @Test
     void contextLoads() {
     }
-
 }

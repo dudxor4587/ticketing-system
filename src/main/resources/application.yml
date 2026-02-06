@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: ticketing-system
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ticketing
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# 티켓팅 설정
+ticketing:
+  queue:
+    max-concurrent: 800  # 최대 동시 입장 인원
+    token-ttl: 300       # 토큰 TTL (초)
