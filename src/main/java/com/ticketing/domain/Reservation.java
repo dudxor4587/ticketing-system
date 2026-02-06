@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "reservations")
@@ -14,22 +15,22 @@ import java.time.LocalDateTime;
 public class Reservation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
-    private Long eventId;
+    private UUID eventId;
 
     @Column(nullable = false)
-    private Long seatId;
+    private UUID seatId;
 
     @Column(nullable = false)
-    private String userId;
+    private UUID userId;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public Reservation(Long eventId, Long seatId, String userId) {
+    public Reservation(UUID eventId, UUID seatId, UUID userId) {
         this.eventId = eventId;
         this.seatId = seatId;
         this.userId = userId;

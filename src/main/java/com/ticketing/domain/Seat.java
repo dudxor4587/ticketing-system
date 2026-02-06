@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "seats")
 @Getter
@@ -12,11 +14,11 @@ import lombok.NoArgsConstructor;
 public class Seat {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
-    private Long eventId;
+    private UUID eventId;
 
     @Column(nullable = false)
     private String seatNumber;
@@ -25,7 +27,7 @@ public class Seat {
     @Column(nullable = false)
     private SeatStatus status;
 
-    public Seat(Long eventId, String seatNumber) {
+    public Seat(UUID eventId, String seatNumber) {
         this.eventId = eventId;
         this.seatNumber = seatNumber;
         this.status = SeatStatus.AVAILABLE;
