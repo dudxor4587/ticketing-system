@@ -35,10 +35,16 @@ management:
   endpoint:
     health:
       show-details: always
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+      slo:
+        "[http.server.requests]": 100ms, 500ms, 1s, 2s, 5s
 
 # 티켓팅 설정
 ticketing:
   queue:
-    max-concurrent: 800  # 최대 동시 입장 인원
+    max-concurrent: 500  # 최대 동시 입장 인원 (VU 수와 동일하게)
     token-ttl: 300       # 토큰 TTL (초)
     activity-ttl: 60     # 대기열 활동 TTL (초) - polling 안하면 만료

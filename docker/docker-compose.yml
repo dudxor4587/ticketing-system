@@ -14,8 +14,11 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    cpus: 0.3
+    mem_limit: 256m
     environment:
       - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=load-test
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticketing
       - SPRING_DATASOURCE_USERNAME=ticketing
       - SPRING_DATASOURCE_PASSWORD=ticketing
@@ -31,8 +34,11 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    cpus: 0.3
+    mem_limit: 256m
     environment:
       - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=load-test
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticketing
       - SPRING_DATASOURCE_USERNAME=ticketing
       - SPRING_DATASOURCE_PASSWORD=ticketing
@@ -48,8 +54,11 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    cpus: 0.3
+    mem_limit: 256m
     environment:
       - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=load-test
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticketing
       - SPRING_DATASOURCE_USERNAME=ticketing
       - SPRING_DATASOURCE_PASSWORD=ticketing

@@ -131,7 +131,7 @@ Long rank = redis.zrank("queue:" + eventId, userId); // 0-based
 
 // 남은 자리 계산
 int tokenCount = redis.get("token:count:" + eventId);
-int maxConcurrent = 800;  // 설정값
+int maxConcurrent = 500;  // 설정값
 int remaining = maxConcurrent - tokenCount;
 
 // 내 순번 < 남은 자리 → ready
