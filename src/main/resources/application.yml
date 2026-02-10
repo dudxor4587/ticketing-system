@@ -7,6 +7,10 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 10
+      connection-timeout: 3000   # 3초
 
   jpa:
     hibernate:
@@ -27,7 +31,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, metrics
+        include: health, metrics, prometheus
   endpoint:
     health:
       show-details: always
