@@ -22,6 +22,16 @@ spring:
       host: localhost
       port: 6379
 
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics
+  endpoint:
+    health:
+      show-details: always
+
 # 티켓팅 설정
 ticketing:
   queue:
