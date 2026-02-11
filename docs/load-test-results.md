@@ -56,10 +56,10 @@ WAS 1대 vs 3대를 **별도 테스트**로 진행하여 처리량을 비교한�
 **스크린샷**
 
 k6 터미널 결과:
-<!-- A-1 k6 터미널 스크린샷 -->
+<img width="964" height="750" alt="스크린샷 2026-02-10 오후 4 51 34" src="https://github.com/user-attachments/assets/4d51da56-9faf-4260-9712-720d67457788" />
 
-Grafana - RPS & Response Time:
-<!-- A-1 Grafana 스크린샷 -->
+Grafana:
+<img width="1470" height="625" alt="스크린샷 2026-02-10 오후 4 50 25" src="https://github.com/user-attachments/assets/87cba78b-6a16-4eed-a7f9-bb2e65533bde" />
 
 **분석**
 - WAS 1대 (CPU 0.3)로는 500 VUs 감당 불가
@@ -82,10 +82,10 @@ Grafana - RPS & Response Time:
 **스크린샷**
 
 k6 터미널 결과:
-<!-- A-2 k6 터미널 스크린샷 -->
+<img width="1083" height="766" alt="스크린샷 2026-02-10 오후 5 07 26" src="https://github.com/user-attachments/assets/b0f636ce-068b-4994-bedf-50a22a40fd9b" />
 
-Grafana - RPS & Response Time:
-<!-- A-2 Grafana 스크린샷 -->
+Grafana:
+<img width="1469" height="618" alt="스크린샷 2026-02-10 오후 5 06 59" src="https://github.com/user-attachments/assets/7255e78e-08c6-4801-b11d-7f11f85ef676" />
 
 **분석**
 - WAS 3대 (CPU 0.9)로 500 VUs 처리 가능
@@ -146,7 +146,10 @@ WAS 3대 테스트에서 HikariCP를 확인해보니 Pending이 발생했다:
 
 ### 측정의 한계
 
-이 테스트는 e2e 시나리오(대기열 → 토큰 → 예매)로 진행했기 때문에 HikariCP 병목을 정확히 검증하기 어렵다:
+실제로 postgresql의 max_connections인 100 기준으로 인스턴스가 3개이니 기존 커넥션 풀 10개 -> 30개로 변경하여 테스트를 진행해보았다.
+하지만 인스턴스 별로 균등한 요청이 가지 않아 pending 현상 해소가 되지 않았다.
+
+이유를 생각해보면 이 테스트는 e2e 시나리오(대기열 → 토큰 → 예매)로 진행했기 때문에 HikariCP 병목을 정확히 검증하기 어렵다:
 
 ```
 대기열 진입 → 상태 폴링 → 토큰 발급 → 예매
