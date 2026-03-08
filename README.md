@@ -10,10 +10,11 @@
 
 ## 기술 스택
 
-- Spring Boot 4.x
+- Spring Boot 3.4
 - PostgreSQL
 - Redis (대기열, 입장 토큰, 분산 락)
 - Redisson
+- Kubernetes (오토스케일링, 무중단 배포, 자동 복구)
 
 ## 핵심 기능
 
@@ -63,3 +64,4 @@ sequenceDiagram
 | [요구사항](docs/requirements.md) | API 목록, 기능 정의 |
 | [한계점 및 개선](docs/limitations.md) | 시스템 한계점, 개선 방안 |
 | [부하 테스트 결과](docs/load-test-results.md) | 수평 확장 효과 검증, Overselling 방지 검증 |
+| [Kubernetes 배포](docs/k8s.md) | docker-compose → K8s 전환, 배포 방법 |
