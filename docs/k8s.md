@@ -40,20 +40,20 @@ Kubernetes (현재)
 
 ```
 k8s/
-├── postgres.yaml     # PostgreSQL Deployment + Service
-├── redis.yaml        # Redis Deployment + Service
-├── configmap.yaml    # 환경변수 (DB_HOST, REDIS_HOST 등)
-├── secret.yaml       # 민감 정보 (DB_PASSWORD)
-├── app.yaml          # 앱 Deployment + Service + Probe
-├── ingress.yaml      # 외부 HTTP 라우팅
-└── hpa.yaml          # 오토스케일링 설정
+├── postgres.yml     # PostgreSQL Deployment + Service
+├── redis.yml        # Redis Deployment + Service
+├── configmap.yml    # 환경변수 (DB_HOST, REDIS_HOST 등)
+├── secret.yml       # 민감 정보 (DB_PASSWORD)
+├── app.yml          # 앱 Deployment + Service + Probe
+├── ingress.yml      # 외부 HTTP 라우팅
+└── hpa.yml          # 오토스케일링 설정
 ```
 
 ---
 
 ## 주요 설정
 
-### Deployment (app.yaml)
+### Deployment (app.yml)
 
 ```yaml
 replicas: 3                    # Pod 3개 유지 (docker-compose의 app1~3 대체)
@@ -90,7 +90,7 @@ readinessProbe:                # 트래픽 받을 준비 됐는지 체크
 - Liveness 실패 → Pod 재시작
 - Readiness 실패 → Service에서 트래픽 제외 (Pod은 유지)
 
-### HPA (hpa.yaml)
+### HPA (hpa.yml)
 
 ```yaml
 minReplicas: 2                 # 최소 2개
@@ -119,8 +119,8 @@ kubectl apply -f k8s/
 # 새 이미지 빌드
 docker build -f docker/Dockerfile -t ticketing-app:v2 .
 
-# app.yaml에서 이미지 태그 변경 후
-kubectl apply -f k8s/app.yaml
+# app.yml에서 이미지 태그 변경 후
+kubectl apply -f k8s/app.yml
 # → Pod이 하나씩 v1 → v2로 교체 (무중단)
 ```
 
