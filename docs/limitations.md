@@ -205,6 +205,28 @@ Redisson 락이 클러스터 환경에서 뚫려도, **DB의 비관적 락에서
 
 ---
 
+## 5. 수동 스케일링 및 배포 → Kubernetes로 개선
+
+### 이전 상황 (docker-compose)
+
+- WAS 추가 시 docker-compose.yml + nginx.conf 수동 수정
+- 배포 시 `docker-compose down` → `up` (다운타임 발생)
+- 장애 감지가 nginx의 fail_timeout(3초)에 의존
+
+### Kubernetes 전환으로 개선된 점
+
+| 항목 | docker-compose | Kubernetes |
+|------|---------------|------------|
+| 스케일링 | 수동 | HPA 자동 (CPU 50% 기준, 2~6개) |
+| 배포 | 다운타임 발생 | 롤링 업데이트 (무중단) |
+| 롤백 | 이전 이미지로 재빌드 | `kubectl rollout undo` (즉시) |
+| 장애 감지 | nginx fail_timeout 3초 | Liveness/Readiness Probe |
+| 환경 분리 | `.env` 파일 | ConfigMap/Secret + Namespace |
+
+상세 내용은 [k8s.md](k8s.md) 참고.
+
+---
+
 ## 정리
 
 | 한계점 | 현재 괜찮은 이유 | 개선 방안 |
@@ -213,3 +235,4 @@ Redisson 락이 클러스터 환경에서 뚫려도, **DB의 비관적 락에서
 | 락 시간 초과 | 처리 시간 1초 이내 | Watchdog, leaseTime 조정 |
 | Redis SPOF | 개발 환경, Redis 안정성 | Cluster / Sentinel, Fallback |
 | 분산 환경 한계 | DB 락으로 이중 방어 | 모니터링, 서킷 브레이커 |
+| ~~수동 스케일링~~ | ~~docker-compose 수동 관리~~ | ~~**Kubernetes로 개선 완료**~~ |

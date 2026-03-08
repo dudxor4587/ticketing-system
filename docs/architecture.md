@@ -26,12 +26,15 @@
 ```mermaid
 flowchart TB
     Client[Client]
-    LB[Load Balancer<br/>Nginx - Round Robin]
+    Ingress[Ingress<br/>외부 HTTP 라우팅]
+    SVC[Service<br/>로드밸런싱]
 
-    subgraph WAS["WAS Cluster"]
-        WAS1[WAS #1<br/>Spring Boot]
-        WAS2[WAS #2<br/>Spring Boot]
-        WASN[WAS #N<br/>Spring Boot]
+    subgraph K8s["Kubernetes Cluster"]
+        Ingress --> SVC
+        SVC --> WAS1[Pod #1<br/>Spring Boot]
+        SVC --> WAS2[Pod #2<br/>Spring Boot]
+        SVC --> WASN[Pod #N<br/>Spring Boot]
+        HPA[HPA<br/>CPU 기반 오토스케일링] -.-> SVC
     end
 
     subgraph DataLayer["Data Layer"]
@@ -39,10 +42,7 @@ flowchart TB
         PostgreSQL[(PostgreSQL<br/>- 예매 정보<br/>- 좌석 정보)]
     end
 
-    Client --> LB
-    LB --> WAS1
-    LB --> WAS2
-    LB --> WASN
+    Client --> Ingress
     WAS1 --> Redis
     WAS1 --> PostgreSQL
     WAS2 --> Redis
@@ -50,6 +50,11 @@ flowchart TB
     WASN --> Redis
     WASN --> PostgreSQL
 ```
+
+> 이전에는 Nginx + docker-compose로 WAS 3대를 수동 관리했으나,
+> 부하테스트에서 수평 확장의 효과를 확인한 후 Kubernetes로 전환하여
+> 오토스케일링, 무중단 배포, 자동 장애 복구를 적용.
+> 상세 내용은 [k8s.md](k8s.md) 참고.
 
 ---
 

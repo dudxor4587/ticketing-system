@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ticketing-config
+data:
+  SERVER_PORT: "8080"
+  SPRING_PROFILES_ACTIVE: load-test
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ticketing
+  SPRING_DATASOURCE_USERNAME: ticketing
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: "6379"
